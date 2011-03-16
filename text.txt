@@ -1,0 +1,5 @@
+{tables,[{painting,[{record_name,painting},
+                    {attributes,[index,artist,title]}]}]}.
+{painting,1,"Ali","The Ghost of Vermeer"}.
+{painting,2,"Dali","The Persistence of Memory"}.
+{painting,3,"Vermeer","The Girl With The Pearl Earring"}.

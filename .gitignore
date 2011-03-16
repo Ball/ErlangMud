@@ -1,0 +1,3 @@
+Mnesia.nonode@nohost/*
+ebin/*.beam
+*.swp
