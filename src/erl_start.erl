@@ -3,4 +3,4 @@
 -include_lib("eunit/include/eunit.hrl").
 
 main() ->
-        eunit:test([room_tests],[verbose]).
+        eunit:test([player_tests, room_tests],[verbose]).

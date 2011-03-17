@@ -4,3 +4,5 @@
         {"It " ++ Text, setup,Setup,Cleanup,Func}).
 -define(Describe(Text,Tests),{Text, Tests}).
 
+-define(_fail(),?_assert(false)).
+
