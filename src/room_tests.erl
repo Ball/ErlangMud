@@ -1,5 +1,6 @@
 -module(room_tests).
 -include("tests.hrl").
+-export([module_setup/0]).
 
 room_test_() -> [
         ?Describe("Describe a room",
@@ -11,11 +12,13 @@ room_test_() -> [
         ?Describe("Searching For Room Information",
                 [ ?It("Should find an existing room",
                         ?_test(begin ?assert(room:does_exist(room_kitchen)) end)),
-                  ?It("Should not find an existing room",
+                  ?It("Should not find a non-existing room",
                         ?_test(begin ?assertNot(room:does_exist(room_noplace)) end))
                 ])
 ].
-
+module_setup()->
+  mnesia:clear_table(room),
+  room:create_room(room_kitchen, "Kitchen", "It's a damn kitchen!").
 setup() ->
         room:start_room(room_kitchen).
 cleanup(_Pid) ->

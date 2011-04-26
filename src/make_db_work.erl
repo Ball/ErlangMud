@@ -4,7 +4,12 @@
 -include("em_records.herl").
 
 init() ->
+        mnesia:create_schema([node()]),
         mnesia:start(),
+        mnesia:create_table(
+                player,
+                [{disc_copies, [node()]},
+                 {attributes, record_info(fields, player)}]),
         mnesia:create_table(
                 room,
                 [{disc_copies, [node()]},

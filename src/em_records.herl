@@ -1,1 +1,2 @@
 -record(room, {key, name, description, items=[], occupants=[]}).
+-record(player, {key,name,description,location_key,items=[]}).

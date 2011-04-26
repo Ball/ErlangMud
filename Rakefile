@@ -19,9 +19,14 @@ task :compile => ['ebin'] + OBJ
 
 task :default => :compile
 
+task :db => :compile do
+  sh "erl -noshell -pa ebin -s mnesia start -s make_db_work init -s init stop"
+end
+
 task :shell => :compile do
   sh "erl -pa ebin -s mnesia start"
 end
+
 task :test => :compile do
   sh "erl -noshell -pa ebin -s mnesia start -s erl_start main -s init stop"
 end
