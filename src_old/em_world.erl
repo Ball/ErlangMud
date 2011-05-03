@@ -1,2 +1,0 @@
--module(em_world).
-

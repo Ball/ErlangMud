@@ -35,7 +35,7 @@ handle_cast(stop, State)->
         {stop, normal, State};
 handle_cast(_Msg, State) ->
         {noreply, State}.
-handle_info(Info, State) ->
+handle_info(_Info, State) ->
         {noreply, State}.
 
 terminate(_Reason, _State) ->
