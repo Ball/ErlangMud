@@ -23,7 +23,14 @@ player_test_() ->[
          ?_test(begin Me = player:login("Tony", "Hello"),
                       Me:move("north"),
                       ?assertEqual({ok, "It's a kitchen"},
-                                   Me:look()) end))])
+                                   Me:look()) end)),
+    ?Describe("Rooms With Items",
+      [?It("should show items in the lobby",fun setup/0, fun cleanup/1,
+           ?_test(begin Me = player:login("Tony","Hello"),
+                        ?assertEqual({ok, "It's a lobby~nyou see a wrench"},
+                                     Me:look()) end))
+      ])
+   ])
 ].
 
 setup() ->

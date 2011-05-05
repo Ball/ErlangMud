@@ -34,7 +34,7 @@ end
 #task :compile => ['ebin'] + OBJ
 task :compile => SRC+TST do
   (SRC + TST).each do |t|
-  sh "erlc -o ebin #{t}"
+    sh "erlc -o ebin #{t}"
   end
 end
 
