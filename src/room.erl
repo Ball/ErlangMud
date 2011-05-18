@@ -25,8 +25,20 @@ handle_call({direction,Direction},_From,State)->
            [E] -> {reply, {ok, E#room_exit.location_key},State};
            _ -> {reply, to_many, State}
         end;
+
+handle_call({add_item, Item}, _From, State) ->
+        {reply, ok, State#room{items =[ Item | State#room.items] }};
+
 handle_call(describe, _From, State) ->
-        {reply, {ok, State#room.description}, State}.
+        if
+          [] =:= State#room.items ->
+                Description = State#room.description;
+          true ->
+                [Item] = State#room.items,
+                Description = lists:flatten(io_lib:format("~s~n\t~s",[State#room.description, Item]))
+        end,
+        {reply, {ok, Description}, State}.
+
 handle_cast(stop, State) ->
         {stop, normal, State}.
 handle_info(_Info,State) ->

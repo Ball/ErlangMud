@@ -27,7 +27,8 @@ player_test_() ->[
     ?Describe("Rooms With Items",
       [?It("should show items in the lobby",fun setup/0, fun cleanup/1,
            ?_test(begin Me = player:login("Tony","Hello"),
-                        ?assertEqual({ok, "It's a lobby~nyou see a wrench"},
+                        gen_server:call(lobby, {add_item,"a wrench"}),
+                        ?assertEqual({ok, "It's a lobby\n\ta wrench"},
                                      Me:look()) end))
       ])
    ])
