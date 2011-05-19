@@ -34,8 +34,8 @@ handle_call(describe, _From, State) ->
           [] =:= State#room.items ->
                 Description = State#room.description;
           true ->
-                [Item] = State#room.items,
-                Description = lists:flatten(io_lib:format("~s~n\t~s",[State#room.description, Item]))
+                Items = string:join(lists:reverse(State#room.items), "\n\t"),
+                Description = lists:flatten(io_lib:format("~s~n\t~s",[State#room.description, Items]))
         end,
         {reply, {ok, Description}, State}.
 
