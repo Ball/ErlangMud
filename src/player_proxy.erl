@@ -8,9 +8,9 @@ look(Item) ->
 move(Direction) ->
         gen_server:call(Pid, {move, Direction}).
 take(Item) ->
-        Pid ! {take,self,Item}.
+        gen_server:call(Pid, {take, Item}).
 drop(Item) ->
-        Pid ! {drop,self,Item}.
+        gen_server:call(Pid, {drop, Item}).
 inventory() ->
         gen_server:call(Pid, inventory).
 command(Command,Args) ->

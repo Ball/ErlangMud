@@ -3,7 +3,7 @@
 -behavior(gen_server).
 
 %% API
--export([start_room/4,start_room/3, add_to_room/2, describe/1]).
+-export([start_room/4,start_room/3, add_to_room/2, take_from_room/2, describe/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -19,6 +19,9 @@ start_room(Key,Name,Description) ->
 
 add_to_room(RoomName,Item) ->
   gen_server:call(RoomName, {add_item, Item}).
+
+take_from_room(RoomName,Item) ->
+  gen_server:call(RoomName, {take_item, Item}).
 
 describe(RoomName) ->
   gen_server:call(RoomName,describe).
@@ -37,6 +40,16 @@ handle_call({direction,Direction},_From,State)->
 
 handle_call({add_item, Item}, _From, State) ->
         {reply, ok, State#room{ items = [Item | State#room.items] }};
+
+handle_call({take_item, Item}, _From, State) ->
+  IsMember = lists:member(Item, (State#room.items)),
+  if
+    IsMember ->
+      Response = ok;
+    true     ->
+      Response = not_found
+  end,
+  {reply, {Response, Item}, State#room{ items = lists:delete(Item, (State#room.items)) }};
 
 handle_call(describe, _From, State) ->
   Description = string:join([(State#room.description) | lists:reverse(State#room.items)], "\n\t"),

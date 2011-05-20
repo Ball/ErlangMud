@@ -29,7 +29,13 @@ player_test_() ->[
            ?_test(begin Me = player:login("Tony","Hello"),
                         gen_server:call(lobby, {add_item,"a wrench"}),
                         ?assertEqual({ok, "It's a lobby\n\ta wrench"},
-                                     Me:look()) end))
+                                     Me:look()) end)) ,
+       ?It("should take an item from the lobby", fun setup/0, fun cleanup/1,
+           ?_test(begin Me = player:login("Tony", "Hello"),
+                        room:add_to_room(lobby, "A wombat"),
+                        Me:take("A wombat"),
+                        ?assertEqual({ok, "You have\n\tA wombat"},
+                                     Me:inventory()) end))
       ])
    ])
 ].

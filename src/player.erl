@@ -19,7 +19,7 @@ login(_Username,_Password) ->
 init([Player]) ->
         {ok, Player}.
 handle_call(look, _From, State) ->
-        {ok, Description} = gen_server:call(State#player.location_key, describe),
+        {ok, Description} = room:describe(State#player.location_key),
         {reply, {ok, Description}, State};
 handle_call({look, Item}, _From, State) ->
         {reply, {ok, io_lib:format("It's a ~w",[Item])},State};
@@ -27,8 +27,18 @@ handle_call({move,Direction}, _From, State) ->
         {ok, LocationKey} = gen_server:call(State#player.location_key,{direction,Direction}),
         NewState = State#player{location_key=LocationKey},
         {reply, {ok, LocationKey}, NewState};
+handle_call({take, Item}, _From, State) ->
+        case room:take_from_room(State#player.location_key, Item) of
+          {ok, Item} -> NewItems = [Item | State#player.items];
+          {not_found, Item} -> NewItems = State#player.items
+        end,
+        {reply, {ok, Item}, State#player{items = NewItems}};
 handle_call(inventory, _From, State) ->
-        {reply, {ok, "You aint got jack!"}, State};
+        case State#player.items of
+          [] -> Message = "You aint got jack!";
+          _  -> Message = lists:flatten( string:join(["You have" | State#player.items], "\n\t"))
+        end,
+        {reply, {ok, Message}, State};
 handle_call(_Atom, _From, State) ->
         {reply, {ok, "Blah!"}, State}.
 handle_cast(stop, State)->
