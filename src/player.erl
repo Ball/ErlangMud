@@ -8,6 +8,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
 
+% login : TODO: store and use real player passwords in DB
 login(Username,"Hello") ->
   Player = #player{key=Username,name=Username,description="Stuff",location_key=lobby},
   {ok,Pid} = gen_server:start_link(?MODULE, [Player], []),
@@ -18,15 +19,22 @@ login(_Username,_Password) ->
 %% gen_server
 init([Player]) ->
         {ok, Player}.
+% look
 handle_call(look, _From, State) ->
         {ok, Description} = room:describe(State#player.location_key),
         {reply, {ok, Description}, State};
+
+% look at item
 handle_call({look, Item}, _From, State) ->
         {reply, {ok, io_lib:format("It's a ~w",[Item])},State};
+
+% move through exit
 handle_call({move,Direction}, _From, State) ->
         {ok, LocationKey} = gen_server:call(State#player.location_key,{direction,Direction}),
         NewState = State#player{location_key=LocationKey},
         {reply, {ok, LocationKey}, NewState};
+
+% take item
 handle_call({take, Item}, _From, State) ->
         {Status,Item} = room:take_from_room(State#player.location_key, Item),
         case Status of
@@ -34,6 +42,8 @@ handle_call({take, Item}, _From, State) ->
           not_found -> NewItems = State#player.items
         end,
         {reply, {Status, Item}, State#player{items = NewItems}};
+
+% drop an item
 handle_call({drop, Item}, _From,State) ->
         case lists:member(Item, (State#player.items)) of
           true -> NewItems = lists:delete(Item, (State#player.items)),
@@ -41,22 +51,23 @@ handle_call({drop, Item}, _From,State) ->
                   {reply, {ok, Item}, State#player{items = NewItems}};
           _    -> {reply, {not_found, Item}, State}
         end;
+
+% inventory
 handle_call(inventory, _From, State) ->
         case State#player.items of
           [] -> Message = "You aint got jack!";
           _  -> Message = lists:flatten( string:join(["You have" | State#player.items], "\n\t"))
         end,
-        {reply, {ok, Message}, State};
-handle_call(_Atom, _From, State) ->
-        {reply, {ok, "Blah!"}, State}.
+        {reply, {ok, Message}, State}.
+
 handle_cast(stop, State)->
-        {stop, normal, State};
-handle_cast(_Msg, State) ->
-        {noreply, State}.
+        {stop, normal, State}.
+
 handle_info(_Info, State) ->
         {noreply, State}.
 
 terminate(_Reason, _State) ->
         ok.
+
 code_change(_OldVsn, State, _Extra) ->
         {ok,State}.

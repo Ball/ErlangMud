@@ -30,17 +30,20 @@ describe(RoomName) ->
 init([Room]) ->
         {ok, Room}.
 
+% direction
 handle_call({direction,Direction},_From,State)->
   Directions = lists:filter(fun (E) -> E#room_exit.direction == Direction end, State#room.exits),
     case Directions of
       []  -> {reply, not_found, State};
       [E] -> {reply, {ok, E#room_exit.location_key},State};
-      _   -> {reply, to_many, State}
+      _   -> {reply, too_many, State}
     end;
 
+% add item to the room
 handle_call({add_item, Item}, _From, State) ->
         {reply, ok, State#room{ items = [Item | State#room.items] }};
 
+% take an item from the room
 handle_call({take_item, Item}, _From, State) ->
   IsMember = lists:member(Item, (State#room.items)),
   if
@@ -51,10 +54,12 @@ handle_call({take_item, Item}, _From, State) ->
   end,
   {reply, {Response, Item}, State#room{ items = lists:delete(Item, (State#room.items)) }};
 
+% describe the room
 handle_call(describe, _From, State) ->
   Description = string:join([(State#room.description) | lists:reverse(State#room.items)], "\n\t"),
   {reply, {ok, Description}, State}.
 
+% stop the room
 handle_cast(stop, State) ->
         {stop, normal, State}.
 
