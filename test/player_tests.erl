@@ -8,11 +8,10 @@ player_test_() ->[
     ]),
   ?Describe("Good Password",
     [?It("should have a player proxy",fun setup/0,fun cleanup/1,
-                    ?_test(begin Me = player:login("Tony", "Hello"),
-                                 ?assertEqual({ok,"You aint got jack!"},
-                                 Me:inventory())
-                           end))
-     ]),
+         ?_test(begin Me = player:login("Tony", "Hello"),
+                      ?assertEqual({ok,"You aint got jack!"},
+                                   Me:inventory()) end))
+    ]),
   ?Describe("Room Interaction",
     [?It("should describe the lobby",fun setup/0, fun cleanup/1,
          ?_test(begin Me = player:login("Tony", "Hello"),
@@ -35,7 +34,29 @@ player_test_() ->[
                         room:add_to_room(lobby, "A wombat"),
                         Me:take("A wombat"),
                         ?assertEqual({ok, "You have\n\tA wombat"},
-                                     Me:inventory()) end))
+                                     Me:inventory()),
+                        ?assertEqual({ok, "It's a lobby"},
+                                     Me:look()) end)),
+       ?It("shouldn't take an item that isn't there", fun setup/0, fun cleanup/1,
+           ?_test(begin Me = player:login("Tony", "Hello"),
+                        ?assertEqual({not_found, "my wallet"},
+                                     Me:take("my wallet")) end)),
+       ?It("shouldn't drop an item I don't have", fun setup/0, fun cleanup/1,
+           ?_test(begin Me = player:login("Tony", "Hello"),
+                        ?assertEqual({not_found, "my wallet"},
+                                     Me:drop("my wallet")),
+                        ?assertEqual({ok, "It's a lobby"},
+                                     Me:look()) end)),
+       ?It("should drop an item in the kitchen", fun setup/0, fun cleanup/1,
+           ?_test(begin Me = player:login("Tony", "Hello"),
+                        room:add_to_room(lobby, "my wallet"),
+                        Me:take("my wallet"),
+                        Me:move("north"),
+                        Me:drop("my wallet"),
+                        ?assertEqual({ok,"You aint got jack!"},
+                                     Me:inventory()),
+                        ?assertEqual({ok,"It's a kitchen\n\tmy wallet"},
+                                     Me:look()) end))
       ])
    ])
 ].

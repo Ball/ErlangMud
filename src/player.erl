@@ -28,11 +28,19 @@ handle_call({move,Direction}, _From, State) ->
         NewState = State#player{location_key=LocationKey},
         {reply, {ok, LocationKey}, NewState};
 handle_call({take, Item}, _From, State) ->
-        case room:take_from_room(State#player.location_key, Item) of
-          {ok, Item} -> NewItems = [Item | State#player.items];
-          {not_found, Item} -> NewItems = State#player.items
+        {Status,Item} = room:take_from_room(State#player.location_key, Item),
+        case Status of
+          ok -> NewItems = [Item | State#player.items];
+          not_found -> NewItems = State#player.items
         end,
-        {reply, {ok, Item}, State#player{items = NewItems}};
+        {reply, {Status, Item}, State#player{items = NewItems}};
+handle_call({drop, Item}, _From,State) ->
+        case lists:member(Item, (State#player.items)) of
+          true -> NewItems = lists:delete(Item, (State#player.items)),
+                  room:add_to_room(State#player.location_key, Item),
+                  {reply, {ok, Item}, State#player{items = NewItems}};
+          _    -> {reply, {not_found, Item}, State}
+        end;
 handle_call(inventory, _From, State) ->
         case State#player.items of
           [] -> Message = "You aint got jack!";
