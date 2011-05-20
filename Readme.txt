@@ -1,23 +1,42 @@
+Erlang Mud
+======================================
 
-Some useage concepts...
-* player_proxy() = player:login(UserName, Password)
-* player_proxy:look().
-* player_proxy:move("north").
-player_proxy:say("Boo!").
-player_proxy:talk("Hello").
-player_proxy:who().
-player_proxy:help().
+This is an experiment.  I want to learn erlang and I want to try building a mud.
 
-the player starts in the "Lobby"
+Usage Concepts
+--------------------------------------
 
-There is a room locator
-There is a player locator
+Use a parameterized module to represent a player.  This enables the player to play using the erlang shell.  At least, until I get it working enough to write socket based clients to interact with the player proxy class
+
+API from the user's stand point
+--------------------------------------
+
+> * == done
+- * player starts in the lobby
+- * player_proxy() = player:login(UserName, Password).
+- * player_proxy:look().
+- * player_proxy:move("north").
+- * player_proxy:drop("my wallet").
+- * player_proxy:take("my wallet").
+
+- player_proxy:who().
+- player_proxy:say("Are those cookies?").
+- player_proxy:shout("Looking for group!").
+- player_proxy:tell("Liv", "Can you pass the chips?").
+- player_proxy:whisper("Liv", "Can you pass the chips?").
+- player_proxy:help().
+
+- persistent players, rooms, items
+- run as an application
+- player creation story
+- room creation story
+- items that have actions
+- test across multiple instances
+- balancing rooms and players accross instances
+
+Design thoughts
+---------------------------------------
+- Items should be more robust. Records that can contain commands (funs).  I'm not sure they need to be 
+- There should be a room locator
+- There should be a player locator
         locators update information based on events?
-
-=> script...
->room:start_room("Lobby", "You are in the lobby").
-ok
->Me = player:login("Tony", "Hello").
-{player_proxy,<0.73.0>}
->Me:look().
-"You are in the lobby~n"
