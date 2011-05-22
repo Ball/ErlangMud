@@ -66,14 +66,24 @@ player_test_() ->[
          ?assertEqual({ok,"It's a kitchen\n\tmy wallet"},
                       Me:look()) end)
       ])
-   ])
+   ]),
+  ?Describe("Communications",
+    [?It("should list the players registered", fun setup/0, fun cleanup/1,
+         begin
+         registry:add_player("Liv", kitchen, self),
+         Me = player:login("Tony", "Hello"),
+         ?assertEqual({ok, "The players logged in are\nTony : lobby\nLiv : kitchen"},
+                      Me:who()) end)
+  ])
 ].
 
 setup() ->
         % I don't know why, but I need the print
         % to make the kitchen test pass
         io:format(""),
+         registry:start(),
         stubs:fake_rooms().
 cleanup(_Pid) ->
         stubs:stop_fake_rooms(),
+        gen_server:cast(registry, stop),
         true.

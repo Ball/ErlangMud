@@ -12,6 +12,7 @@
 login(Username,"Hello") ->
   Player = #player{key=Username,name=Username,description="Stuff",location_key=lobby},
   {ok,Pid} = gen_server:start_link(?MODULE, [Player], []),
+  registry:add_player(Username,lobby,Pid),
   player_proxy:new(Pid);
 login(_Username,_Password) ->
   error.
@@ -58,7 +59,16 @@ handle_call(inventory, _From, State) ->
           [] -> Message = "You aint got jack!";
           _  -> Message = lists:flatten( string:join(["You have" | State#player.items], "\n\t"))
         end,
-        {reply, {ok, Message}, State}.
+        {reply, {ok, Message}, State};
+
+% who
+handle_call(who, _From, State) ->
+        {ok, Players} = registry:players(),
+        PlayerLines = lists:map( fun ({Nic, Room, _Pid}) ->
+                                     Nic ++ " : " ++ atom_to_list(Room)  end, Players),
+        String = "The players logged in are\n" ++
+                 lists:flatten(string:join(PlayerLines, "\n")),
+        {reply, {ok,String}, State}.
 
 handle_cast(stop, State)->
         {stop, normal, State}.

@@ -49,6 +49,6 @@ task :shell => :compile do
 end
 
 task :test => :compile do
-  sh "erl -noshell -pa ebin -s mnesia start -s test_runner run -s init stop"
+  sh "erl -noshell -smp disable -pa ebin -s mnesia start -s test_runner run -s init stop"
 end
 

@@ -18,8 +18,8 @@ API from the user's stand point
 - * player_proxy:move("north").
 - * player_proxy:drop("my wallet").
 - * player_proxy:take("my wallet").
+- * player_proxy:who().
 
-- player_proxy:who().
 - player_proxy:say("Are those cookies?").
 - player_proxy:shout("Looking for group!").
 - player_proxy:tell("Liv", "Can you pass the chips?").
