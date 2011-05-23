@@ -85,5 +85,5 @@ setup() ->
         stubs:fake_rooms().
 cleanup(_Pid) ->
         stubs:stop_fake_rooms(),
-        gen_server:cast(registry, stop),
+        gen_server:cast({global,registry}, stop),
         true.

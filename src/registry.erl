@@ -11,15 +11,15 @@
 
 %% API
 start() ->
-  gen_server:start_link({local,?MODULE}, ?MODULE, [[]], []).
+  gen_server:start_link({global,?MODULE}, ?MODULE, [[]], []).
 add_player(Nic, Location, Pid) ->
-  gen_server:call(?MODULE, {add_player, {Nic, Location, Pid}}).
+  gen_server:call({global,?MODULE}, {add_player, {Nic, Location, Pid}}).
 remove_player(Nic) ->
-  gen_server:call(?MODULE, {remove_player, Nic}).
+  gen_server:call({global,?MODULE}, {remove_player, Nic}).
 players() ->
-  gen_server:call(?MODULE, players).
+  gen_server:call({global,?MODULE}, players).
 players_in_room(Room) ->
-  gen_server:call(?MODULE, {players_in_room, Room}).
+  gen_server:call({global,?MODULE}, {players_in_room, Room}).
 
 %% gen_server
 init([State]) ->
