@@ -68,8 +68,20 @@ handle_call(who, _From, State) ->
                                      Nic ++ " : " ++ atom_to_list(Room)  end, Players),
         String = "The players logged in are\n" ++
                  lists:flatten(string:join(PlayerLines, "\n")),
-        {reply, {ok,String}, State}.
+        {reply, {ok,String}, State};
 
+handle_call({say, Message}, _From, State) ->
+        Nic = State#player.name,
+        Room = State#player.location_key,
+        {ok, Players} = registry:players_in_room(Room),
+        lists:map(fun ({_Nic, _Room, Pid}) -> gen_server:cast(Pid,{say,Nic, Message}) end,
+                  lists:filter(fun ({PNic, _Room, _Pid})-> PNic /= Nic end,
+                               Players)),
+        {reply, ok, State}.
+
+handle_cast({say, Nic, Message}, State)->
+        io:format("~s says ~s~n", [Nic, Message]),
+        {noreply, State};
 handle_cast(stop, State)->
         {stop, normal, State}.
 
