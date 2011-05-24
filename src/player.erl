@@ -71,6 +71,35 @@ handle_call(who, _From, State) ->
                  lists:flatten(string:join(PlayerLines, "\n")),
         {reply, {ok,String}, State};
 
+% tell
+handle_call({tell, Nic, Message}, _From, State) ->
+        {ok,Players} = registry:players(),
+        PickedNics = lists:filter(fun ({PNic, _Room, _Pid}) -> PNic =:= Nic end, Players),
+        lists:map(fun ({_Nic, _Room, Pid}) -> gen_server:cast(Pid, {shout, Nic, Message}) end,
+                  PickedNics),
+        {reply, ok, State};
+
+% whisper
+handle_call({whisper, Nic, Message}, _From, State) ->
+        {ok,Players} = registry:players_in_room(State#player.location_key),
+        [{_Nic,_Room,SpokenPid}] = lists:filter(fun({PNic, _Room, _Pid}) -> PNic =:= Nic end, Players),
+        OtherPlayers = lists:filter(fun({PNic, _Room, _Pid}) -> (PNic /= Nic) and (PNic /= (State#player.name)) end, Players),
+        gen_server:cast(SpokenPid, {whisper, (State#player.name),Message}),
+        lists:map(fun ({_Nic,_Room, Pid}) -> gen_server:cast(Pid, {mumble, (State#player.name), Nic}) end,
+                  OtherPlayers),
+        {reply, ok, State};
+
+
+% shout
+handle_call({shout, Message}, _From, State) ->
+        Nic = State#player.name,
+        {ok, Players} = registry:players(),
+        lists:map(fun ({_Nic, _Room, Pid}) -> gen_server:cast(Pid, {shout,Nic, Message}) end,
+                  lists:filter(fun ({PNic, _Room, _Pid}) -> PNic /= Nic end,
+                               Players)),
+        {reply, ok, State};
+
+% say
 handle_call({say, Message}, _From, State) ->
         Nic = State#player.name,
         Room = State#player.location_key,
@@ -80,8 +109,14 @@ handle_call({say, Message}, _From, State) ->
                                Players)),
         {reply, ok, State}.
 
+handle_cast({mumble,From,To}, State) ->
+        io:format("~s whispered to ~s~n", [From, To]),
+        {noreply,State};
 handle_cast({say, Nic, Message}, State)->
         io:format("~s says ~s~n", [Nic, Message]),
+        {noreply, State};
+handle_cast({shout, Nic, Message}, State) ->
+        io:format("~s shouts ~s~n", [Nic, Message]),
         {noreply, State};
 handle_cast(stop, State)->
         {stop, normal, State}.
