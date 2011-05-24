@@ -31,7 +31,8 @@ handle_call({look, Item}, _From, State) ->
 
 % move through exit
 handle_call({move,Direction}, _From, State) ->
-        {ok, LocationKey} = gen_server:call(State#player.location_key,{direction,Direction}),
+        {ok, LocationKey} = room:direction(State#player.location_key,Direction),
+        registry:add_player(State#player.name, LocationKey, self()),
         NewState = State#player{location_key=LocationKey},
         {reply, {ok, LocationKey}, NewState};
 

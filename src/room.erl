@@ -3,7 +3,7 @@
 -behavior(gen_server).
 
 %% API
--export([start_room/4,start_room/3, add_to_room/2, take_from_room/2, describe/1]).
+-export([start_room/4,start_room/3, add_to_room/2, take_from_room/2, direction/2, describe/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -11,20 +11,23 @@
 
 start_room(Key,Name,Description,Exits) ->
         Room = #room{key=Key,name=Name,description=Description,exits=Exits},
-        gen_server:start_link({local,Key}, ?MODULE,[Room], []).
+        gen_server:start_link({global,Key}, ?MODULE,[Room], []).
 
 start_room(Key,Name,Description) ->
         Room = #room{key=Key,name=Name,description=Description},
-        gen_server:start_link({local,Key}, ?MODULE, [Room], []).
+        gen_server:start_link({global,Key}, ?MODULE, [Room], []).
 
 add_to_room(RoomName,Item) ->
-  gen_server:call(RoomName, {add_item, Item}).
+  gen_server:call({global,RoomName}, {add_item, Item}).
 
 take_from_room(RoomName,Item) ->
-  gen_server:call(RoomName, {take_item, Item}).
+  gen_server:call({global,RoomName}, {take_item, Item}).
 
 describe(RoomName) ->
-  gen_server:call(RoomName,describe).
+  gen_server:call({global,RoomName},describe).
+
+direction(RoomName,Direction) ->
+  gen_server:call({global,RoomName}, {direction, Direction}).
 
 %% gen_server
 init([Room]) ->

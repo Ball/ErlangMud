@@ -30,7 +30,7 @@ player_test_() ->[
     [?It("should show items in the lobby",fun setup/0, fun cleanup/1,
          begin
          Me = player:login("Tony","Hello"),
-         gen_server:call(lobby, {add_item,"a wrench"}),
+         room:add_to_room(lobby, "a wrench"),
          ?assertEqual({ok, "It's a lobby\n\ta wrench"},
                       Me:look()) end),
      ?It("should take an item from the lobby", fun setup/0, fun cleanup/1,
