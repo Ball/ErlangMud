@@ -1,5 +1,5 @@
 -module(player_proxy,[Pid]).
--export([look/0,look/1,move/1,take/1,drop/1,inventory/0,who/0,shout/1,say/1,command/2,exit/0]).
+-export([look/0,look/1,move/1,take/1,drop/1,inventory/0,who/0,shout/1,tell/2,whisper/2,say/1,command/2,exit/0]).
 
 look() ->
         gen_server:call(Pid, look).

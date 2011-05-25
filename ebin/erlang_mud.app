@@ -2,11 +2,15 @@
   [{description, "A simple erlang mud"},
    {vsn, "0.1.0"},
    {modules, [
-                em_app,
-                em_sup,
+                erlang_mud_app,
+                erlang_mud_sup,
+                player,
+                player_proxy,
+                registry,
+                room
              ]},
-   {registered, [em_sup]},
+   {registered, [registry,erlang_mud_sup]},
    {applications, [kernel, stdlib]},
-   {mod, {em_app, []}}
+   {mod, {erlang_mud_app, []}}
   ]
 }.

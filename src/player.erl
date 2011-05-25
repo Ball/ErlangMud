@@ -82,10 +82,10 @@ handle_call({tell, Nic, Message}, _From, State) ->
 % whisper
 handle_call({whisper, Nic, Message}, _From, State) ->
         {ok,Players} = registry:players_in_room(State#player.location_key),
-        [{_Nic,_Room,SpokenPid}] = lists:filter(fun({PNic, _Room, _Pid}) -> PNic =:= Nic end, Players),
-        OtherPlayers = lists:filter(fun({PNic, _Room, _Pid}) -> (PNic /= Nic) and (PNic /= (State#player.name)) end, Players),
+        [{_Nic,_Room,SpokenPid}] = lists:filter(fun({PNic, _Room1, _Pid}) -> PNic =:= Nic end, Players),
+        OtherPlayers = lists:filter(fun({PNic, _Room1, _Pid}) -> (PNic /= Nic) and (PNic /= (State#player.name)) end, Players),
         gen_server:cast(SpokenPid, {whisper, (State#player.name),Message}),
-        lists:map(fun ({_Nic,_Room, Pid}) -> gen_server:cast(Pid, {mumble, (State#player.name), Nic}) end,
+        lists:map(fun ({_Nic1,_Room1, Pid}) -> gen_server:cast(Pid, {mumble, (State#player.name), Nic}) end,
                   OtherPlayers),
         {reply, ok, State};
 
@@ -94,7 +94,7 @@ handle_call({whisper, Nic, Message}, _From, State) ->
 handle_call({shout, Message}, _From, State) ->
         Nic = State#player.name,
         {ok, Players} = registry:players(),
-        lists:map(fun ({_Nic, _Room, Pid}) -> gen_server:cast(Pid, {shout,Nic, Message}) end,
+        lists:map(fun ({_Nic1, _Room1, Pid}) -> gen_server:cast(Pid, {shout,Nic, Message}) end,
                   lists:filter(fun ({PNic, _Room, _Pid}) -> PNic /= Nic end,
                                Players)),
         {reply, ok, State};
