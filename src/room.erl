@@ -1,13 +1,17 @@
 -module(room).
 -include("src/records.hrl").
+-include_lib("stdlib/include/qlc.hrl").
 -behavior(gen_server).
 
 %% API
--export([start_room/4,start_room/3, add_to_room/2, take_from_room/2, direction/2, describe/1]).
+-export([start_from_db/0, start_from_db/1, start_room/4,start_room/3, add_to_room/2, take_from_room/2, direction/2, describe/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
+
+start_room(Record=#room{key=Key}) ->
+        gen_server:start_link({global,Key}, ?MODULE, [Record], []).
 
 start_room(Key,Name,Description,Exits) ->
         Room = #room{key=Key,name=Name,description=Description,exits=Exits},
@@ -16,6 +20,14 @@ start_room(Key,Name,Description,Exits) ->
 start_room(Key,Name,Description) ->
         Room = #room{key=Key,name=Name,description=Description},
         gen_server:start_link({global,Key}, ?MODULE, [Room], []).
+start_from_db() ->
+        {atomic, Rows} = mnesia:transaction(fun() ->
+           qlc:eval( qlc:q([ X || X <- mnesia:table(room)])) end),
+        lists:map( fun (A) -> start_room(A) end, Rows).
+start_from_db(Key) ->
+        {atomic, [Row]}=mnesia:transaction(fun() ->
+           mnesia:read({room,Key}) end),
+        start_room(Row).
 
 add_to_room(RoomName,Item) ->
   gen_server:call({global,RoomName}, {add_item, Item}).

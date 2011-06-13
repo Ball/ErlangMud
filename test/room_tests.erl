@@ -1,4 +1,5 @@
 -module(room_tests).
+-include("../src/records.hrl").
 -include("tests.hrl").
 
 room_test_() -> [
@@ -34,6 +35,49 @@ room_test_() -> [
         ?assertEqual("It's a kitchen\n\ta wrench\n\ta wombat",Description)end)
    ]) 
 ].
+
+room_database_test_() -> [
+  ?Describe("run a room from the database",
+    [?It("should load a stable from the database",
+         fun insert_stable/0, fun delete_stable/1,
+         begin
+         room:start_from_db(stable),
+         {ok,Description} = room:describe(stable),
+         ?assertEqual("A stable from the database",Description)
+         end)
+  ]),
+  ?Describe("run all rooms in the database",
+    [?It("should start multiple rooms",
+         fun insert_stable/0, fun delete_stable/1,
+         begin
+         room:start_from_db(),
+         {ok,Description1} = room:describe(stable),
+         {ok,Description2} = room:describe(yard),
+         ?assertEqual("A stable from the database", Description1),
+         ?assertEqual("A yard from the database", Description2)
+         end)
+  ])
+].
+
+insert_stable() ->
+        mnesia:transaction(fun() ->
+                mnesia:write(
+                 #room{key=yard,
+                       name="The horse yard",
+                       description="A yard from the database"}
+                ),
+                mnesia:write(
+                 #room{key=stable,
+                       name="The king's stable",
+                       description="A stable from the database"}
+                )
+                end).
+delete_stable(_Pid) ->
+        gen_server:cast({global, stable}, stop),
+        mnesia:transaction(fun() ->
+                           mnesia:delete(room, yard),
+                           mnesia:delete(room, stable) end),
+        true.
 
 setup()-> io:format(""),stubs:fake_rooms().
 cleanup(_Pid) -> stubs:stop_fake_rooms(), true.
