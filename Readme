@@ -8,7 +8,7 @@ Usage Concepts
 
 Use a parameterized module to represent a player.  This enables the player to play using the erlang shell.  At least, until I get it working enough to write socket based clients to interact with the player proxy class
 
-API from the user's stand point
+API from the user's stand point 
 --------------------------------------
 
 > * == done
@@ -32,7 +32,7 @@ API from the user's stand point
 - room creation story
 - items that have actions
 - test across multiple instances
-- balancing rooms and players accross instances
+- balancing rooms and players across instances
 
 Design thoughts
 ---------------------------------------
