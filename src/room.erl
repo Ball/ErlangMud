@@ -56,7 +56,9 @@ handle_call({direction,Direction},_From,State)->
 
 % add item to the room
 handle_call({add_item, Item}, _From, State) ->
-        {reply, ok, State#room{ items = [Item | State#room.items] }};
+        NewState = State#room{ items = [Item | State#room.items]},
+        mnesia:transaction(fun() -> mnesia:write(NewState) end),
+        {reply, ok, NewState};
 
 % take an item from the room
 handle_call({take_item, Item}, _From, State) ->
@@ -67,7 +69,9 @@ handle_call({take_item, Item}, _From, State) ->
     true     ->
       Response = not_found
   end,
-  {reply, {Response, Item}, State#room{ items = lists:delete(Item, (State#room.items)) }};
+  NewState = State#room{items = lists:delete(Item,(State#room.items))},
+  mnesia:transaction(fun() -> mnesia:write(NewState) end),
+  {reply, {Response, Item}, NewState};
 
 % describe the room
 handle_call(describe, _From, State) ->

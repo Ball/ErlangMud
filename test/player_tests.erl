@@ -5,7 +5,7 @@ player_test_() ->[
   ?Describe("Bad Password",
     [?It("should return an error",fun setup/0,fun cleanup/1,
          begin
-         ?assertEqual(error, player:login("Tony", "BassPassword"))end)
+         ?assertEqual(error, player:login("Tony", "BadPassword"))end)
     ]),
   ?Describe("Good Password",
     [?It("should have a player proxy",fun setup/0,fun cleanup/1,

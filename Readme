@@ -23,10 +23,11 @@ API from the user's stand point
 - * player_proxy:shout("Looking for group!").
 - * player_proxy:tell("Liv", "Can you pass the chips?").
 - * player_proxy:whisper("Liv", "Can you pass the chips?").
+- * persistent rooms
 
 - player_proxy:help().
 
-- persistent players, rooms, items
+- persistent players, items
 - run as an application
 - player creation story
 - room creation story
@@ -36,7 +37,9 @@ API from the user's stand point
 
 Design thoughts
 ---------------------------------------
-- Items should be more robust. Records that can contain commands (funs).  I'm not sure they need to be 
+- Items should be more robust.
+  Records that can contain commands (funs).
+  I'm not sure they need to be 
 - There should be a room locator
 - There should be a player locator
         locators update information based on events?
