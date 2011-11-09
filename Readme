@@ -33,7 +33,7 @@ API from the user's stand point
 - room creation story
 - items that have actions
 - test across multiple instances
-- balancing rooms and players accross instances
+- balancing rooms and players across instances
 
 Design thoughts
 ---------------------------------------
@@ -42,4 +42,4 @@ Design thoughts
   I'm not sure they need to be 
 - There should be a room locator
 - There should be a player locator
-        locators update information based on events?
+  locators update information based on events?
