@@ -1,5 +1,6 @@
 -module(player).
 -include("src/records.hrl").
+-include_lib("stdlib/include/qlc.hrl").
 -behavior(gen_server).
 
 %% API
@@ -8,17 +9,22 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
 
-% login : TODO: store and use real player passwords in DB
-login(Username,"Hello") ->
-  Player = #player{key=Username,name=Username,description="Stuff",location_key=lobby},
-  {ok,Pid} = gen_server:start_link(?MODULE, [Player], []),
-  registry:add_player(Username,lobby,Pid),
-  player_proxy:new(Pid);
-login(_Username,_Password) ->
-  error.
+% login 
+login(Username,Password) ->
+   Result = mnesia:transaction(fun()->
+         qlc:eval( qlc:q([X || X<- mnesia:table(player),
+                               X#player.name =:= Username,
+                               X#player.password =:= Password])) end),
+   case Result of
+     {atomic, [Player]} ->
+                {ok,Pid} = gen_server:start_link(?MODULE, [Player#player{location_key=lobby}], []),
+                registry:add_player(Username, lobby, Pid),
+                player_proxy:new(Pid);
+     _Else -> error
+   end.
 
 %% gen_server
-init([Player]) ->
+init([Player|_]) ->
         {ok, Player}.
 % look
 handle_call(look, _From, State) ->

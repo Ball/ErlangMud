@@ -32,6 +32,7 @@ task :thing do
 end
 
 #task :compile => ['ebin'] + OBJ
+desc "builds the erlang files"
 task :compile => SRC+TST do
   (SRC + TST).each do |t|
     sh "erlc -o ebin #{t}"
@@ -44,10 +45,12 @@ task :default => :compile
 #  sh "erl -noshell -pa ebin -s mnesia start -s make_db_work init -s init stop"
 #end
 
+desc "opens the shell"
 task :shell => :compile do
   sh "erl -pa ebin -s mnesia start"
 end
 
+desc "runs the test"
 task :test => :compile do
   sh "erl -noshell -smp disable -pa ebin -s mnesia start -s test_runner run -s init stop"
 end

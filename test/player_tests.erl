@@ -1,4 +1,6 @@
 -module(player_tests).
+-include("../src/records.hrl").
+-include_lib("stdlib/include/qlc.hrl").
 -include("tests.hrl").
 
 player_test_() ->[
@@ -77,12 +79,74 @@ player_test_() ->[
   ])
 ].
 
+player_database_test_() -> [
+  ?Describe("load from the database",
+    [?It("should load a player from the database",
+         fun insert_greg/0, fun delete_greg/1,
+         begin
+         Me = player:login("Greg", "thing"),
+         ?assertEqual({ok, "It's a lobby"}, Me:look())
+         end),
+     ?It("should fail when the password isn't in the database",
+         fun insert_greg/0, fun delete_greg/1,
+         begin
+         Me = player:login("Greg", "Monkey!"),
+         ?assertEqual(error, Me)
+         end),
+     ?It("should locate the player in the correct room",
+         fun insert_greg/0, fun delete_greg/1,
+         begin
+         Me = player:login("Greg", "thing"),
+         ?assertEqual({ok, "It's a lobby"}, Me:look())
+         end)
+    ]),
+  ?Describe("update changes when they happen",
+    [?It("should remember a picked up item",
+         fun insert_greg/0, fun delete_greg/1,
+         begin
+         io:format("-")
+         end),
+     ?It("should remember a dropped item",
+         fun insert_greg/0, fun delete_greg/1,
+         begin
+         io:format("-")
+         end)
+    ])     
+].
+insert_greg() ->
+        setup(),
+        mnesia:transaction(fun() ->
+                mnesia:write(
+                        #player{key="Greg",
+                                password="thing",
+                                name="Greg",
+                                description="Just this guy",
+                                location_key=kitchen,
+                                items=["Book"]}
+                )
+        end).
+% starting and stopping greg is your problem, not the deletion's
+delete_greg(Pid) ->
+        cleanup(Pid),
+        mnesia:transaction(fun() -> 
+                                mnesia:delete(player, "Greg") end),
+        true.
 setup() ->
         % I don't know why, but I need the print
         % to make the kitchen test pass
         io:format(""),
          registry:start(),
-        stubs:fake_rooms().
+        stubs:fake_rooms(),
+        mnesia:transaction(fun() ->
+                mnesia:write(
+                        #player{key="Tony",
+                                password="Hello",
+                                name="Tony",
+                                description="Stuff",
+                                location_key=kitchen,
+                                items=[]}
+                )
+        end).
 cleanup(_Pid) ->
         stubs:stop_fake_rooms(),
         gen_server:cast({global,registry}, stop),

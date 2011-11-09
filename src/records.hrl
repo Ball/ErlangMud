@@ -1,4 +1,4 @@
--record(player, {key,name,description,location_key, items=[]}).
+-record(player, {key,password,name,description,location_key, items=[]}).
 -record(room_exit, {direction,description,location_key}).
 -record(room, {key,name,description, items=[], occupants=[],exits=[]}).
 -record(item, {key,name,description,location_key,owner_key}).
