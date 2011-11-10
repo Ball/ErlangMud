@@ -24,10 +24,10 @@ API from the user's stand point
 - * player_proxy:tell("Liv", "Can you pass the chips?").
 - * player_proxy:whisper("Liv", "Can you pass the chips?").
 - * persistent rooms
+- * persistent players
 
 - player_proxy:help().
 
-- persistent players, items
 - run as an application
 - player creation story
 - room creation story
@@ -39,7 +39,9 @@ Design thoughts
 ---------------------------------------
 - Items should be more robust.
   Records that can contain commands (funs).
-  I'm not sure they need to be 
+  I'm not sure they need to be backed by a server
+  But behaviors might help them deal with things like
+  I can be used to fight creatues, I can be worn, etc.
 - There should be a room locator
 - There should be a player locator
   locators update information based on events?

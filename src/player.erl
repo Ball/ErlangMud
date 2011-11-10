@@ -49,14 +49,18 @@ handle_call({take, Item}, _From, State) ->
           ok -> NewItems = [Item | State#player.items];
           not_found -> NewItems = State#player.items
         end,
-        {reply, {Status, Item}, State#player{items = NewItems}};
+        NewState = State#player{items = NewItems},
+        mnesia:transaction(fun() -> mnesia:write(NewState) end),
+        {reply, {Status, Item}, NewState};
 
 % drop an item
 handle_call({drop, Item}, _From,State) ->
         case lists:member(Item, (State#player.items)) of
           true -> NewItems = lists:delete(Item, (State#player.items)),
                   room:add_to_room(State#player.location_key, Item),
-                  {reply, {ok, Item}, State#player{items = NewItems}};
+                  NewState = State#player{items = NewItems},
+                  mnesia:transaction(fun()->mnesia:write(NewState) end),
+                  {reply, {ok, Item}, NewState};
           _    -> {reply, {not_found, Item}, State}
         end;
 

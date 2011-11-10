@@ -104,12 +104,23 @@ player_database_test_() -> [
     [?It("should remember a picked up item",
          fun insert_greg/0, fun delete_greg/1,
          begin
-         io:format("-")
+         Me = player:login("Greg", "thing"),
+         room:add_to_room(lobby, "a wrench"),
+         Me:take("a wrench"),
+         {atomic, Rows} = mnesia:transaction( fun() ->
+                     qlc:eval( qlc:q([X || X <- mnesia:table(player)])) end),
+         [Greg] = lists:filter((fun(X) -> "Greg" =:= X#player.name end), Rows),
+         ?assertEqual(["a wrench", "Book"], Greg#player.items)
          end),
      ?It("should remember a dropped item",
          fun insert_greg/0, fun delete_greg/1,
          begin
-         io:format("-")
+         Me = player:login("Greg", "thing"),
+         Me:drop("Book"),
+         {atomic, Rows} = mnesia:transaction(fun() ->
+                     qlc:eval( qlc:q([X || X<-mnesia:table(player)])) end),
+         [Greg] = lists:filter((fun(X) -> "Greg" =:= X#player.name end), Rows),
+         ?assertEqual([], Greg#player.items)
          end)
     ])     
 ].
