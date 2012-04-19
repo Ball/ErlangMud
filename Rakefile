@@ -36,4 +36,15 @@ desc "runs the test"
 task :test => [:compile] do
   sh "erl -noshell -smp disable -pa ebin -s mnesia start -s test_runner run -s init stop"
 end
-
+namespace :db do
+  desc "Initializes the database.  Placeholder for remembering.  Doesn't actually work."
+  task :init => :compile do
+    sh "erl -pa ebin -s create_tables create_schema -s init stop"
+    sh "erl -pa ebin -s mnesia start -s create_tables init_tables -s init stop"
+  end
+  desc "Drops the dables and kills the schema"
+  task :drop => :compile do
+     sh "erl -pa ebin -s create_tables drop_tables -s init stop"
+     sh "erl -pa ebin -s create_tables delete_schema -s init stop"
+  end
+end
