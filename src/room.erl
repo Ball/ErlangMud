@@ -4,7 +4,8 @@
 -behavior(gen_server).
 
 %% API
--export([start_from_db/0, start_from_db/1, start_room/4,start_room/3, add_to_room/2, take_from_room/2, direction/2, describe/1]).
+-export([start_from_db/0, start_from_db/1, start_room/4,start_room/3, destroy_room/1,
+         create_room/3, create_exit/4, add_to_room/2, take_from_room/2, direction/2, describe/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -28,6 +29,22 @@ start_from_db(Key) ->
         {atomic, [Row]}=mnesia:transaction(fun() ->
            mnesia:read({room,Key}) end),
         start_room(Row).
+create_room(Key,Name,Description) ->
+        Room = #room{key=Key, name=Name, description=Description},
+        mnesia:transaction(fun() ->
+          mnesia:write( Room )
+        end),
+        start_room(Room).
+
+create_exit(FromRoom, ToRoom, Direction, Description) ->
+	Exit = #room_exit{direction=Direction, description=Description, location_key=ToRoom},
+	gen_server:call({global, FromRoom}, {create_exit, Exit}).
+
+destroy_room(Key) ->
+    gen_server:cast({global, Key}, stop),
+    mnesia:transaction(fun() ->
+      mnesia:delete({room, Key})
+    end).
 
 add_to_room(RoomName,Item) ->
   gen_server:call({global,RoomName}, {add_item, Item}).
@@ -53,6 +70,20 @@ handle_call({direction,Direction},_From,State)->
       [E] -> {reply, {ok, E#room_exit.location_key},State};
       _   -> {reply, too_many, State}
     end;
+
+% add an exit to the room
+handle_call({create_exit, Exit}, _From, State) ->
+	Exits = lists:filter(fun (E) -> E#room_exit.direction == Exit#room_exit.direction end, State#room.exits),
+	case Exits of
+		[]  ->NewState = State#room{ exits = [Exit | State#room.exits]},
+		      mnesia:transaction(fun() -> mnesia:write(NewState) end),
+		      {reply, ok, NewState};
+	        [_] ->OtherExits = lists:filter(fun (N) -> N#room_exit.direction /= Exit#room_exit.direction end, State#room.exits),
+		      NewState = State#room{ exits = [Exit | OtherExits]},
+		      mnesia:transaction(fun() -> mnesia:write(NewState) end),
+		      {reply, ok, NewState};
+	        _   ->{reply, too_many, State}
+	end;
 
 % add item to the room
 handle_call({add_item, Item}, _From, State) ->

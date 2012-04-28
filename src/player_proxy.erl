@@ -1,5 +1,5 @@
 -module(player_proxy,[Pid]).
--export([look/0,look/1,move/1,take/1,drop/1,inventory/0,who/0,shout/1,tell/2,whisper/2,say/1,command/2,exit/0]).
+-export([look/0,look/1,move/1,take/1,drop/1,inventory/0,who/0,shout/1,tell/2,whisper/2,say/1,command/2,exit/0,create_room/3, create_exit/4,destroy_room/1]).
 
 look() ->
         gen_server:call(Pid, look).
@@ -25,5 +25,11 @@ say(Message) ->
         gen_server:call(Pid, {say, Message}).
 command(Command,Args) ->
         Pid ! {command, self, Command, Args}.
+create_room(Key,Name,Description) ->
+        room:create_room(Key, Name, Description).
+create_exit(FromRoom, ToRoom, Direction, Description) ->
+	room:create_exit(FromRoom, ToRoom, Direction, Description).
+destroy_room(Key) ->
+        room:destroy_room(Key).
 exit() ->
         Pid ! {exit, self}.
