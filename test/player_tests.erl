@@ -28,6 +28,13 @@ player_test_() ->[
          Me:move("north"),
          ?assertEqual({ok, "It's a kitchen"},
                       Me:look()) end),
+     ?It("should create a stairwell to the kitchen", fun setup/0, fun cleanup/1,
+         begin
+         Me = player:login("Tony", "Hello"),
+	 Me:create_exit(lobby, kitchen, "stairs", "A Stairwell in a corner"),
+         Me:move("stairs"),
+         ?assertEqual({ok, "It's a kitchen"},
+                      Me:look()) end),
   ?Describe("Rooms With Items",
     [?It("should show items in the lobby",fun setup/0, fun cleanup/1,
          begin
@@ -122,7 +129,29 @@ player_database_test_() -> [
          [Greg] = lists:filter((fun(X) -> "Greg" =:= X#player.name end), Rows),
          ?assertEqual([], Greg#player.items)
          end)
-    ])     
+    ]),
+  ?Describe("Create and Destroy Rooms",
+    [?It("Create Room",
+         fun insert_greg/0, fun delete_greg/1,
+         begin
+         Me = player:login("Greg", "thing"),
+         Me:create_room(park,"A Park", "Green and verdent"),
+         {atomic, Rows} = mnesia:transaction(fun() ->
+           qlc:eval( qlc:q([ X || X <- mnesia:table(room)])) end),
+         [Park] = lists:filter((fun (X) -> park == X#room.key end), Rows),
+         ?assertEqual([], Park#room.items)
+         end),
+     ?It("Destroy Room",
+         fun insert_greg/0, fun delete_greg/1,
+         begin
+         Me = player:login("Greg", "thing"),
+         Me:create_room(park, "A Park", "Green and verdent"),
+         Me:destroy_room(park),
+         Names = global:registered_names(),
+         Name = lists:filter((fun (X) -> X == office end), Names),
+         ?assertEqual([], Name)
+         end)
+   ])
 ].
 insert_greg() ->
         setup(),
@@ -146,7 +175,7 @@ setup() ->
         % I don't know why, but I need the print
         % to make the kitchen test pass
         io:format(""),
-         registry:start(),
+        registry:start(),
         stubs:fake_rooms(),
         mnesia:transaction(fun() ->
                 mnesia:write(

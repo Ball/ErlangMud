@@ -78,7 +78,59 @@ room_database_test_() -> [
          [Stable] = lists:filter((fun (X) -> stable == X#room.key end), Rows),
          ?assertEqual([], Stable#room.items)
          end)
-  ])
+  ]),
+  ?Describe("Create Rooms",
+    [?It("Should insert a new room in to the database",
+         fun setup/0, (fun (Pid) -> 
+                         room:destroy_room(park),
+                         cleanup(Pid) end),
+         begin
+         room:create_room(park, "The Park", "A green park with a small swingset"),
+         {atomic, Rows} = mnesia:transaction(fun() ->
+           qlc:eval( qlc:q([ X || X <- mnesia:table(room)])) end),
+         [Park] = lists:filter((fun (X) -> park == X#room.key end), Rows),
+         ?assertEqual([], Park#room.items)
+         end),
+     ?It("Should start the room",
+         fun setup/0, (fun (Pid) -> 
+                         room:destroy_room(park),
+                         cleanup(Pid) end),
+         begin
+         room:create_room(park, "The Park", "A green park with a small swingset"),
+         {ok, Description} = room:describe(park),
+         ?assertEqual("A green park with a small swingset", Description)
+         end)
+  ]),
+  ?Describe("Destroy Room",
+    [?It("should stop a room",
+         fun setup/0, fun cleanup/1,
+         begin
+         room:create_room(office, "An Office", "Some Description"),
+         room:destroy_room(office),
+         Names = global:registered_names(),
+         Name = lists:filter((fun (X) -> X == office end), Names),
+         ?assertEqual([], Name)
+         end) ,
+     ?It("should remove a room from the database",
+         fun setup/0, fun cleanup/1,
+         begin
+         room:create_room(office, "An Office", "Some Description"),
+         room:destroy_room(office),
+         {atomic, Rows} = mnesia:transaction(fun() ->
+           qlc:eval( qlc:q([ X || X <- mnesia:table(room)])) end),
+         OfficeQuery = lists:filter((fun (X) -> office == X#room.key end), Rows),
+         ?assertEqual([], OfficeQuery)
+         end)
+  ]),
+  ?Describe("Add an Exit to a room",
+    [?It("should add an exit to a room",
+         fun setup/0, fun cleanup/1,
+	 begin
+	 room:create_exit(lobby, kitchen, "stairs", "A Staircase leading down"),
+	 Response = room:direction(lobby, "stairs"),
+	 ?assertEqual({ok, kitchen}, Response)
+	 end)
+    ])
 ].
 
 insert_stable() ->
@@ -94,11 +146,14 @@ insert_stable() ->
                        description="A stable from the database"}
                 )
                 end).
+
+
 delete_stable(_Pid) ->
         gen_server:cast({global, stable}, stop),
+        gen_server:cast({global, yard}, stop),
         mnesia:transaction(fun() ->
-                           mnesia:delete(room, yard),
-                           mnesia:delete(room, stable) end),
+                           mnesia:delete({room, yard}),
+                           mnesia:delete({room, stable}) end),
         true.
 
 setup()-> io:format(""),stubs:fake_rooms().

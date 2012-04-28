@@ -23,9 +23,12 @@ API from the user's stand point
 - * player_proxy:shout("Looking for group!").
 - * player_proxy:tell("Liv", "Can you pass the chips?").
 - * player_proxy:whisper("Liv", "Can you pass the chips?").
+- * player_proxy:create_room(park, "A park", "Verdant and amazing!").
+- * player_proxy:destroy_room(park).
 - * persistent rooms
 - * persistent players
 
+- player_proxy:create_exit(park, stable, "east", "A half open dutch door").
 - player_proxy:help().
 
 - run as an application
