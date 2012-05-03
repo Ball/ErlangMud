@@ -29,6 +29,7 @@ API from the user's stand point
 - * persistent players
 - * player_proxy:create_exit(park, stable, "east", "A half open dutch door").
 
+- player_proxy:create_exit(park, stable, "east", "A half open dutch door").
 - player_proxy:help().
 
 - run as an application
