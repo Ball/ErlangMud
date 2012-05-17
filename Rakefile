@@ -36,6 +36,11 @@ desc "runs the test"
 task :test => [:compile] do
   sh "erl -noshell -smp disable -pa ebin -s mnesia start -s test_runner run -s init stop"
 end
+
+desc "runs as an application"
+task :app => [:compile] do
+  sh "erl -pa ebin -s mnesia start -s application start erlang_mud"
+end
 namespace :db do
   desc "Initializes the database.  Placeholder for remembering.  Doesn't actually work."
   task :init => :compile do
@@ -46,5 +51,13 @@ namespace :db do
   task :drop => :compile do
      sh "erl -pa ebin -s create_tables drop_tables -s init stop"
      sh "erl -pa ebin -s create_tables delete_schema -s init stop"
+  end
+  desc "Writes the database to a file"
+  task :export => :compile do
+     sh "erl -pa ebin -s mnesia start -s mnesia dump_to_textfile backup_world -s init stop"
+  end
+  desc "Loads a file in to the database"
+  task :import => :compile do
+     sh "erl -pa ebin -s mnesia start -s mnesia load_textfile backup_world -s init stop"
   end
 end

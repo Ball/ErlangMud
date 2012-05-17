@@ -28,13 +28,21 @@ API from the user's stand point
 - * player_proxy:destroy_room(park).
 - * persistent rooms
 - * persistent players
+- * run as an application
+  - * start supervisor
+  - * start registry
+  - * load rooms from db
 
-- player_proxy:help().
+- player_proxy need to restart or handle bad commands.
+- better clean up DB after tests
+- start a mud-lib to load for play
 
-- run as an application
+
 - player creation story
-- room creation story
+- player_proxy:help().
+- text interface for telnet
 - items that have actions
+- rooms that have actions
 - test across multiple instances
 - balancing rooms and players across instances
 
@@ -48,3 +56,49 @@ Design thoughts
 - There should be a room locator
 - There should be a player locator
   locators update information based on events?
+
+Reflections on design to date...
+-----------------------------------------------------
+I like the idea of a room being a unit of concurrency
+I like the idea of a room coordinator
+I like the idea of a player and it's connection as a unit of concurrency
+I need supervisors.  To boot the rooms if nothing else.
+To really kick the engine in to high gear, I'll need to have three source dirs; Driver, Lib, and Test
+When contemplating how to write code to modify the server I can either have an interpreted language, or I can have all code written as behaviors and leverage erlang's hot code loading.  This will require defining rooms as a behavior.
+If I want to make items a behavior, I might end up using an item as a unit of concurrency.  Depends on how behaviors work.
+are there performance penalties for cascaded behaviors?
+Player's shouldn't need their own behavior since they are all the same.
+Monsters might need their own unit of concurrency...
+I should start out with a decent telnet service...
+I need to handle commands and associate them with rooms, items, and maybe classes.
+I'm going to start with a non-load-balancing application.
+I'm going to have the application see if the global super is there and at least handle connections then.
+I'm going to have rooms round robin on connected nodes.
+
+Questions for Former MUD wizards....
+-----------------------------------------------------
+how do you handle command arguments with spaces?  Or are there none?
+  pickup siver amulet || pickup "silver amulet" || pickup amulet
+what are the hooks needed for a room?
+  player_enter
+  player_exit
+  player_damaged
+  player_attacked
+  item_droped
+  item_taken
+what are the hooks needed for a monster?
+  player_enter
+  player_leave
+  player_damaged
+  player_attacked
+  player_fell
+  monster_damanged
+  monster_fell
+  item_taken
+  item_dropped
+what are the hooks for an item?
+  player_take
+  player_drop
+  player_use
+  player_attack
+Can you tell I have no idea what I'm doing?

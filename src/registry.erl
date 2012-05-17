@@ -11,6 +11,7 @@
 
 %% API
 start() ->
+  io:format("I'm starting the registry!"),
   gen_server:start_link({global,?MODULE}, ?MODULE, [[]], []).
 add_player(Nic, Location, Pid) ->
   gen_server:call({global,?MODULE}, {add_player, {Nic, Location, Pid}}).

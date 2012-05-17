@@ -4,7 +4,7 @@
 -behavior(gen_server).
 
 %% API
--export([login/2]).
+-export([login/2, get_players/0]).
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
@@ -22,6 +22,10 @@ login(Username,Password) ->
                 player_proxy:new(Pid);
      _Else -> error
    end.
+get_players() ->
+   {atomic, Rows} = mnesia:transaction(fun() ->
+      qlc:eval( qlc:q([X || X <- mnesia:table(player)])) end),
+   lists:map(fun(P) -> {P#player.name, P#player.password} end, Rows).
 
 %% gen_server
 init([Player|_]) ->

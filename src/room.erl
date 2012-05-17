@@ -4,7 +4,7 @@
 -behavior(gen_server).
 
 %% API
--export([start_from_db/0, start_from_db/1, start_room/4,start_room/3, destroy_room/1,
+-export([start_from_db/0, start_from_db/1, start_room/4,start_room/3, destroy_room/1, get_rooms/0,
          create_room/3, create_exit/4, add_to_room/2, take_from_room/2, direction/2, describe/1]).
 
 %% gen_server callbacks
@@ -22,9 +22,12 @@ start_room(Key,Name,Description) ->
         Room = #room{key=Key,name=Name,description=Description},
         gen_server:start_link({global,Key}, ?MODULE, [Room], []).
 start_from_db() ->
+	Rows = get_rooms(),
+        lists:map( fun (A) -> start_room(A) end, Rows).
+get_rooms() ->
         {atomic, Rows} = mnesia:transaction(fun() ->
            qlc:eval( qlc:q([ X || X <- mnesia:table(room)])) end),
-        lists:map( fun (A) -> start_room(A) end, Rows).
+        Rows.
 start_from_db(Key) ->
         {atomic, [Row]}=mnesia:transaction(fun() ->
            mnesia:read({room,Key}) end),
